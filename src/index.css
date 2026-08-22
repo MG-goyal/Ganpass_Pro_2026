@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1a1a1a;
+    background-color: #fdfcf9;
+  }
+
+  h1, h2, h3, .font-serif-editorial {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+
+  .font-serif-accent {
+    font-family: 'Cinzel', Georgia, serif;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(26, 26, 26, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 26, 26, 0.3);
+}
+
+/* Editorial subtle paper grid / hairline rules */
+.border-editorial {
+  border-color: rgba(26, 26, 26, 0.08);
+}
+
+.bg-editorial-dark {
+  background-color: #1a1a1a;
+}
+
+.text-editorial-orange {
+  color: #f27d26;
+}
+
+.bg-editorial-orange {
+  background-color: #f27d26;
+}
+
+.editorial-tag {
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+

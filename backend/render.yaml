@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: ganpass-api
+    env: python
+    region: singapore
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: MONGODB_URI
+        sync: false
+      - key: DATABASE_NAME
+        value: ganpass
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CHECKIN_RADIUS_METERS
+        value: "150"
+      - key: CORS_ORIGINS
+        value: "http://localhost:3000,http://localhost:5173,https://ais-dev-f2jyhltvkhdmrmt53kqv3m-810700504339.asia-southeast1.run.app,https://ais-pre-f2jyhltvkhdmrmt53kqv3m-810700504339.asia-southeast1.run.app"

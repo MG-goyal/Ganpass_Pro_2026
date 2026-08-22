@@ -1,0 +1,6 @@
+{
+  "name": "GanPass 2026",
+  "description": "Mumbai's Ganesh Chaturthi digital companion for discovering mandals, planning realistic routes, tracking Agman events, and collecting GanPass 10 digital stamps.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
