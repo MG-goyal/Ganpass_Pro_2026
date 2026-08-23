@@ -4,6 +4,7 @@ annotated-types==0.7.0
 anyio==4.13.0
 asttokens==3.0.1
 attrs==26.1.0
+bcrypt==5.0.0
 blinker==1.9.0
 cachetools==7.0.5
 certifi==2026.2.25
@@ -52,6 +53,7 @@ numpy==2.4.2
 packaging==26.0
 pandas==3.0.2
 parso==0.8.7
+passlib==1.7.4
 pillow==12.1.1
 platformdirs==4.10.0
 prompt_toolkit==3.0.52
