@@ -7,8 +7,8 @@ import { ShieldCheck, Lock, Mail, ArrowRight } from 'lucide-react';
 export const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { loginAdmin } = useAuth();
-  const [email, setEmail] = useState('admin@ganpass.in');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
