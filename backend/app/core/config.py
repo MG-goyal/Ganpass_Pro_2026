@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     PROJECT_NAME: str = "GanPass 2026 API"
     VERSION: str = "1.0.0"
-    API_V1_STR: str = "/api"
+    API_V1_STR: str = "/api/v1"
 
     # Database
     MONGODB_URI: str = Field(
@@ -30,9 +30,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000",
         "http://localhost:5173",
-        "https://ais-dev-f2jyhltvkhdmrmt53kqv3m-810700504339.asia-southeast1.run.app",
-        "https://ais-pre-f2jyhltvkhdmrmt53kqv3m-810700504339.asia-southeast1.run.app",
-        "*"
+        "https://ganpass.vercel.app",
     ]
 
     @field_validator("CORS_ORIGINS", mode="before")
