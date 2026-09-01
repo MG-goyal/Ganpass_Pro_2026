@@ -20,50 +20,89 @@ export interface MandalCoordinates {
 }
 
 export interface Mandal {
+
   id: string;
   name: string;
+
   marathiName?: string;
   marathi_name?: string;
+
   slug?: string;
+
   description?: string;
+
   area: string;
   zone?: string;
+
   address?: string;
+
   nearestStation?: string;
   nearest_station?: string;
+
   coordinates?: MandalCoordinates;
+
   latitude?: number;
   longitude?: number;
+
   heroImageUrl?: string;
   hero_image_url?: string;
+
   image?: string;
+
   galleryUrls?: string[];
+
   whyVisit?: string;
   why_visit?: string;
+
   history?: string;
+
   visitingInformation?: string;
   visiting_information?: string;
+
   howToReach?: string;
   how_to_reach?: string;
+
   crowdWaitEstimate?: string;
   crowd_wait_estimate?: string;
+
   avg_darshan_time_mins?: number;
+
   isFeatured10?: boolean;
   is_featured?: boolean;
+
   featuredOrder?: number;
   featured_order?: number;
+
   isActive?: boolean;
   is_active?: boolean;
+
   establishedYear?: number;
   established_year?: number;
+
+  // NEW
+  darshanStartTime?: string;
+  darshan_start_time?: string;
+
+  darshanEndTime?: string;
+  darshan_end_time?: string;
+
+  idolHeight?: string;
+  idol_height?: string;
+
+  stampEnabled?: boolean;
+  stamp_enabled?: boolean;
+
   category?: MandalCategory | string;
+
   tags?: string[];
+
   highlights?: string[];
+
   tagline?: string;
+
   created_at?: string;
   updated_at?: string;
 }
-
 export interface FestivalEvent {
   id: string;
   name?: string;

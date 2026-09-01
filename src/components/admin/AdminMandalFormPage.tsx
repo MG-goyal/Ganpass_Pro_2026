@@ -22,25 +22,29 @@ export const AdminMandalFormPage: React.FC = () => {
     area: '',
     address: '',
     nearestStation: '',
-    establishedYear: 1934,
+
+    // Mandal Details Defaults
+    establishedYear: undefined,
+    darshanStartTime: '06:00 AM',
+    darshanEndTime: '11:30 PM',
+    idolHeight: '',
+    stampEnabled: true,
+
     category: 'Famous' as MandalCategory,
     description: '',
     whyVisit: '',
-    why_visit: '',
     history: '',
     visitingInformation: '',
-    visiting_information: '',
     howToReach: '',
-    how_to_reach: '',
-    crowdWaitEstimate: '1 - 2 Hours',
+    crowdWaitEstimate: '15 - 30 minutes',
     avg_darshan_time_mins: 45,
-    heroImageUrl: 'https://images.unsplash.com/photo-1567591370504-80cfd69a68a5?auto=format&fit=crop&w=1200&q=80',
-    image: 'https://images.unsplash.com/photo-1567591370504-80cfd69a68a5?auto=format&fit=crop&w=1200&q=80',
+
+    heroImageUrl: '',
+    image: '',
+
     isFeatured10: false,
-    is_featured: false,
-    featuredOrder: 1,
     isActive: true,
-    is_active: true,
+
     latitude: 18.9904,
     longitude: 72.8378,
     coordinates: { lat: 18.9904, lng: 72.8378 },
@@ -48,24 +52,44 @@ export const AdminMandalFormPage: React.FC = () => {
 
   useEffect(() => {
     if (isEdit && id) {
-      mandalService.getMandalById(id).then((data) => {
-        if (data) setFormData(data);
+      mandalService.getMandalById(id).then((data: any) => {
+        if (data) {
+          setFormData({
+            ...data,
+            // Fallback bindings for both snake_case and camelCase
+            establishedYear: data.establishedYear ?? data.established_year ?? undefined,
+            darshanStartTime: data.darshanStartTime ?? data.darshan_start_time ?? '06:00 AM',
+            darshanEndTime: data.darshanEndTime ?? data.darshan_end_time ?? '11:30 PM',
+            idolHeight: data.idolHeight ?? data.idol_height ?? '',
+            stampEnabled: data.stampEnabled ?? data.stamp_enabled ?? true,
+            nearestStation: data.nearestStation ?? data.nearest_station ?? '',
+            marathiName: data.marathiName ?? data.marathi_name ?? '',
+            whyVisit: data.whyVisit ?? data.why_visit ?? data.description ?? '',
+            crowdWaitEstimate: data.crowdWaitEstimate ?? data.crowd_wait_estimate ?? '',
+            heroImageUrl: data.heroImageUrl ?? data.hero_image_url ?? data.image ?? '',
+          });
+        }
       });
     }
   }, [isEdit, id]);
 
-  const handleChange = (field: keyof Mandal | string, value: any) => {
-    setFormData((prev: Partial<Mandal>) => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleCoordinatesChange = (field: 'lat' | 'lng', value: number) => {
-    setFormData((prev: Partial<Mandal>) => {
+    setFormData((prev) => {
       const currentLat = prev.coordinates?.lat ?? prev.latitude ?? 18.9904;
       const currentLng = prev.coordinates?.lng ?? prev.longitude ?? 72.8378;
+
       const updated = {
         lat: field === 'lat' ? value : currentLat,
         lng: field === 'lng' ? value : currentLng,
       };
+
       return {
         ...prev,
         latitude: updated.lat,
@@ -80,28 +104,68 @@ export const AdminMandalFormPage: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    const descText = formData.description || formData.whyVisit || formData.why_visit || formData.history || `${formData.name} Ganpati Pandal Mumbai`;
+    const descText =
+      formData.whyVisit ||
+      formData.why_visit ||
+      formData.description ||
+      `${formData.name} Ganpati Pandal Mumbai`;
 
     const payload: any = {
-      ...formData,
-      description: descText,
-      image: formData.heroImageUrl || formData.image,
-      heroImageUrl: formData.heroImageUrl || formData.image,
-      why_visit: formData.whyVisit || formData.why_visit || descText,
-      whyVisit: formData.whyVisit || formData.why_visit || descText,
-      visiting_information: formData.visitingInformation || formData.visiting_information || 'Open for darshan 24 hours during festival days',
-      how_to_reach: formData.howToReach || formData.how_to_reach || `Near ${formData.nearestStation || 'Local Station'}`,
+      name: formData.name,
+      marathi_name: formData.marathiName || formData.marathi_name || '',
+      marathiName: formData.marathiName || formData.marathi_name || '',
+      slug: formData.slug || undefined,
+      zone: formData.zone,
+      area: formData.area,
+      address: formData.address,
+      nearest_station: formData.nearestStation || formData.nearest_station || '',
+      nearestStation: formData.nearestStation || formData.nearest_station || '',
+
+      // Mandal Custom Specs
+      established_year: formData.establishedYear ? Number(formData.establishedYear) : null,
+      establishedYear: formData.establishedYear ? Number(formData.establishedYear) : null,
+
+      darshan_start_time: formData.darshanStartTime || '06:00 AM',
+      darshanStartTime: formData.darshanStartTime || '06:00 AM',
+
+      darshan_end_time: formData.darshanEndTime || '11:30 PM',
+      darshanEndTime: formData.darshanEndTime || '11:30 PM',
+
+      idol_height: formData.idolHeight || '',
+      idolHeight: formData.idolHeight || '',
+
+      stamp_enabled: Boolean(formData.stampEnabled ?? formData.stamp_enabled),
+      stampEnabled: Boolean(formData.stampEnabled ?? formData.stamp_enabled),
+
+      crowd_wait_estimate: formData.crowdWaitEstimate || '',
+      crowdWaitEstimate: formData.crowdWaitEstimate || '',
       avg_darshan_time_mins: Number(formData.avg_darshan_time_mins) || 45,
+
+      category: formData.category || 'Famous',
+      description: descText,
+      why_visit: descText,
+      whyVisit: descText,
+      history: formData.history || '',
+      visiting_information: formData.visitingInformation || 'Open for darshan during festival days',
+      visitingInformation: formData.visitingInformation || 'Open for darshan during festival days',
+      how_to_reach: formData.howToReach || `Near ${formData.nearestStation || 'Local Station'}`,
+      howToReach: formData.howToReach || `Near ${formData.nearestStation || 'Local Station'}`,
+
+      image: formData.heroImageUrl || formData.image || '',
+      heroImageUrl: formData.heroImageUrl || formData.image || '',
+      hero_image_url: formData.heroImageUrl || formData.image || '',
+
+      is_featured: Boolean(formData.isFeatured10 || formData.is_featured),
+      isFeatured10: Boolean(formData.isFeatured10 || formData.is_featured),
+      is_active: Boolean(formData.isActive ?? formData.is_active ?? true),
+      isActive: Boolean(formData.isActive ?? formData.is_active ?? true),
+
       latitude: Number(formData.coordinates?.lat ?? formData.latitude ?? 18.9904),
       longitude: Number(formData.coordinates?.lng ?? formData.longitude ?? 72.8378),
       coordinates: {
         lat: Number(formData.coordinates?.lat ?? formData.latitude ?? 18.9904),
         lng: Number(formData.coordinates?.lng ?? formData.longitude ?? 72.8378),
       },
-      is_featured: Boolean(formData.isFeatured10 || formData.is_featured),
-      isFeatured10: Boolean(formData.isFeatured10 || formData.is_featured),
-      is_active: Boolean(formData.isActive ?? formData.is_active ?? true),
-      isActive: Boolean(formData.isActive ?? formData.is_active ?? true),
     };
 
     try {
@@ -122,7 +186,7 @@ export const AdminMandalFormPage: React.FC = () => {
     <div className="pb-16">
       <AdminHeader
         title={isEdit ? `Edit: ${formData.name || 'Mandal'}` : 'Add New Mandal'}
-        subtitle="Configure pandal credentials, coordinates, transit guides, and GanPass 10 status"
+        subtitle="Configure pandal credentials, darshan timings, idol specifications, and GanPass status"
         action={
           <Link to="/admin/mandals">
             <Button variant="outline" size="sm" pill leftIcon={<ArrowLeft className="w-4 h-4" />}>
@@ -138,12 +202,11 @@ export const AdminMandalFormPage: React.FC = () => {
             {error}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="bg-white border border-[#1A1A1A]/10 rounded-3xl p-8 shadow-xs space-y-5">
-            <h3 className="text-lg font-serif-editorial font-bold text-[#1A1A1A]">
-              1. Pandal Identity & Location
-            </h3>
 
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Section 1: Pandal Identity & Location */}
+          <div className="bg-white border border-[#1A1A1A]/10 rounded-3xl p-8 shadow-xs space-y-5">
+            <h3 className="text-lg font-bold text-[#1A1A1A]">1. Pandal Identity & Location</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
@@ -154,8 +217,8 @@ export const AdminMandalFormPage: React.FC = () => {
                   required
                   value={formData.name || ''}
                   onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder="e.g. Lalbaugcha Raja"
-                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F27D26]/40"
+                  placeholder="e.g. Vinayak Nagar Sarvajanik Ganesh Utsav Mandal"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
                 />
               </div>
 
@@ -167,21 +230,19 @@ export const AdminMandalFormPage: React.FC = () => {
                   type="text"
                   value={formData.marathiName || ''}
                   onChange={(e) => handleChange('marathiName', e.target.value)}
-                  placeholder="उदा. लालबागचा राजा"
-                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#F27D26]/40"
+                  placeholder="उदा. विनायक नगरचा महाराजा"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
-                  Zone
-                </label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">Zone</label>
                 <select
                   value={formData.zone}
                   onChange={(e) => handleChange('zone', e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-xs font-bold uppercase cursor-pointer"
+                  className="w-full px-3.5 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-xs font-bold uppercase"
                 >
                   <option value="South Mumbai">South Mumbai</option>
                   <option value="Central">Central</option>
@@ -199,8 +260,8 @@ export const AdminMandalFormPage: React.FC = () => {
                   required
                   value={formData.area || ''}
                   onChange={(e) => handleChange('area', e.target.value)}
-                  placeholder="e.g. Parel, Lalbaug"
-                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm focus:outline-none"
+                  placeholder="e.g. Bhayandar West"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
                 />
               </div>
 
@@ -213,30 +274,26 @@ export const AdminMandalFormPage: React.FC = () => {
                   required
                   value={formData.nearestStation || ''}
                   onChange={(e) => handleChange('nearestStation', e.target.value)}
-                  placeholder="e.g. Currey Road / Chinchpokli"
-                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm focus:outline-none"
+                  placeholder="e.g. Bhayandar Railway Station"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
-                Full Street Address
-              </label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">Full Street Address</label>
               <input
                 type="text"
                 value={formData.address || ''}
                 onChange={(e) => handleChange('address', e.target.value)}
-                placeholder="e.g. Lalbaug Market, GD Ambekar Marg, Mumbai 400012"
-                className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm focus:outline-none"
+                placeholder="e.g. Vinayak Nagar, Station Road, Bhayandar West"
+                className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1">
-                  Latitude
-                </label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1">Latitude</label>
                 <input
                   type="number"
                   step="any"
@@ -245,10 +302,9 @@ export const AdminMandalFormPage: React.FC = () => {
                   className="w-full px-3 py-2 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-xs font-mono"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1">
-                  Longitude
-                </label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1">Longitude</label>
                 <input
                   type="number"
                   step="any"
@@ -260,40 +316,66 @@ export const AdminMandalFormPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Section 2: Mandal Details & Timings */}
           <div className="bg-white border border-[#1A1A1A]/10 rounded-3xl p-8 shadow-xs space-y-5">
-            <h3 className="text-lg font-serif-editorial font-bold text-[#1A1A1A]">
-              2. Pilgrim Guide & History
-            </h3>
+            <h3 className="text-lg font-bold text-[#1A1A1A]">2. Specifications & Timings</h3>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
-                Why Visit / Mandal Overview *
-              </label>
-              <textarea
-                rows={3}
-                required
-                value={formData.whyVisit || formData.description || ''}
-                onChange={(e) => {
-                  handleChange('whyVisit', e.target.value);
-                  handleChange('why_visit', e.target.value);
-                  handleChange('description', e.target.value);
-                }}
-                placeholder="Explain what makes this mandal special..."
-                className="w-full p-3.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm focus:outline-none"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
+                  Established Year (EST.)
+                </label>
+                <input
+                  type="number"
+                  min="1800"
+                  max="2100"
+                  value={formData.establishedYear ?? ''}
+                  onChange={(e) => handleChange('establishedYear', e.target.value ? Number(e.target.value) : undefined)}
+                  placeholder="e.g. 1934"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
+                  Idol Height
+                </label>
+                <input
+                  type="text"
+                  value={formData.idolHeight || ''}
+                  onChange={(e) => handleChange('idolHeight', e.target.value)}
+                  placeholder="e.g. 12 to 14 Feet"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
-                History & Heritage
-              </label>
-              <textarea
-                rows={4}
-                value={formData.history || ''}
-                onChange={(e) => handleChange('history', e.target.value)}
-                placeholder="Detail historical founding, rituals, and community legacy..."
-                className="w-full p-3.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm focus:outline-none"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
+                  Darshan Opening Time
+                </label>
+                <input
+                  type="text"
+                  value={formData.darshanStartTime || ''}
+                  onChange={(e) => handleChange('darshanStartTime', e.target.value)}
+                  placeholder="e.g. 06:00 AM"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
+                  Darshan Closing Time
+                </label>
+                <input
+                  type="text"
+                  value={formData.darshanEndTime || ''}
+                  onChange={(e) => handleChange('darshanEndTime', e.target.value)}
+                  placeholder="e.g. 11:30 PM"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -305,7 +387,7 @@ export const AdminMandalFormPage: React.FC = () => {
                   type="text"
                   value={formData.crowdWaitEstimate || ''}
                   onChange={(e) => handleChange('crowdWaitEstimate', e.target.value)}
-                  placeholder="e.g. 2 - 4 Hours"
+                  placeholder="e.g. 15 - 30 minutes"
                   className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
                 />
               </div>
@@ -321,27 +403,64 @@ export const AdminMandalFormPage: React.FC = () => {
                     handleChange('heroImageUrl', e.target.value);
                     handleChange('image', e.target.value);
                   }}
-                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm font-mono text-xs"
+                  className="w-full px-4 py-2.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm font-mono"
                 />
               </div>
             </div>
           </div>
 
+          {/* Section 3: Guide & Description */}
           <div className="bg-white border border-[#1A1A1A]/10 rounded-3xl p-8 shadow-xs space-y-5">
-            <h3 className="text-lg font-serif-editorial font-bold text-[#1A1A1A]">
-              3. GanPass 10 Circuit & Publishing
-            </h3>
+            <h3 className="text-lg font-bold text-[#1A1A1A]">3. Overview & Highlights</h3>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]/70 mb-1.5">
+                Why Visit / Description *
+              </label>
+              <textarea
+                rows={3}
+                required
+                value={formData.whyVisit || formData.description || ''}
+                onChange={(e) => {
+                  handleChange('whyVisit', e.target.value);
+                  handleChange('description', e.target.value);
+                }}
+                placeholder="Explain what makes this mandal special..."
+                className="w-full p-3.5 bg-[#FDFCF9] border border-[#1A1A1A]/15 rounded-xl text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Section 4: GanPass 10 & Stamp Controls */}
+          <div className="bg-white border border-[#1A1A1A]/10 rounded-3xl p-8 shadow-xs space-y-5">
+            <h3 className="text-lg font-bold text-[#1A1A1A]">4. GanPass 10 Circuit & Stamp Options</h3>
+
+            <div className="flex items-center gap-6 p-4 rounded-2xl bg-[#FDFCF9] border border-[#F27D26]/20">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(formData.stampEnabled ?? formData.stamp_enabled)}
+                  onChange={(e) => handleChange('stampEnabled', e.target.checked)}
+                  className="w-4 h-4 text-[#F27D26] rounded"
+                />
+                <div>
+                  <span className="block text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
+                    Enable Darshan Stamp
+                  </span>
+                  <span className="block text-xs text-[#1A1A1A]/50 mt-1">
+                    Toggle visibility of the "COLLECT DARSHAN STAMP" section on the public page.
+                  </span>
+                </div>
+              </label>
+            </div>
 
             <div className="flex items-center gap-6 p-4 rounded-2xl bg-[#FDFCF9] border border-[#1A1A1A]/10">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={Boolean(formData.isFeatured10 || formData.is_featured)}
-                  onChange={(e) => {
-                    handleChange('isFeatured10', e.target.checked);
-                    handleChange('is_featured', e.target.checked);
-                  }}
-                  className="w-4 h-4 text-[#F27D26] rounded focus:ring-[#F27D26]"
+                  onChange={(e) => handleChange('isFeatured10', e.target.checked)}
+                  className="w-4 h-4 text-[#F27D26] rounded"
                 />
                 <span className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
                   Include in Official GanPass 10 Circuit
@@ -354,10 +473,7 @@ export const AdminMandalFormPage: React.FC = () => {
                 <input
                   type="checkbox"
                   checked={Boolean(formData.isActive ?? formData.is_active ?? true)}
-                  onChange={(e) => {
-                    handleChange('isActive', e.target.checked);
-                    handleChange('is_active', e.target.checked);
-                  }}
+                  onChange={(e) => handleChange('isActive', e.target.checked)}
                   className="w-4 h-4 text-emerald-600 rounded"
                 />
                 <span className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
@@ -367,11 +483,10 @@ export const AdminMandalFormPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Submit Action */}
           <div className="flex items-center justify-end gap-3 pt-4">
             <Link to="/admin/mandals">
-              <Button variant="outline" size="md" pill>
-                Cancel
-              </Button>
+              <Button variant="outline" size="md" pill>Cancel</Button>
             </Link>
             <Button
               type="submit"

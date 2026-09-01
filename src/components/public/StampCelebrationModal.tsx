@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from '../ui/Modal';
 import { Mandal } from '../../types';
-import { Award, Sparkles, CheckCircle2, Share2, ArrowRight } from 'lucide-react';
+import { Award, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Link } from 'react-router-dom';
 
@@ -22,8 +22,10 @@ export const StampCelebrationModal: React.FC<StampCelebrationModalProps> = ({
 }) => {
   if (!mandal) return null;
 
+  const marathiTitle = mandal.marathiName || mandal.marathi_name;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md">
+    <Modal isOpen={isOpen} onClose={onClose}>
       <div className="text-center p-6 sm:p-8 bg-[#FDFCF9] rounded-2xl relative overflow-hidden">
         {/* Decorative background glow */}
         <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#F27D26]/15 rounded-full blur-3xl pointer-events-none" />
@@ -47,9 +49,9 @@ export const StampCelebrationModal: React.FC<StampCelebrationModalProps> = ({
           {mandal.name}
         </h3>
 
-        {mandal.marathiName && (
-          <p className="text-sm font-semibold text-[#1A1A1A]/60 mb-4">
-            {mandal.marathiName}
+        {marathiTitle && (
+          <p className="text-sm font-semibold text-[#1A1A1A]/60 mb-4 font-devanagari">
+            {marathiTitle}
           </p>
         )}
 
@@ -68,7 +70,7 @@ export const StampCelebrationModal: React.FC<StampCelebrationModalProps> = ({
           <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
             <div
               className="h-full bg-[#F27D26] transition-all duration-700"
-              style={{ width: `${(collectedCount / 10) * 100}%` }}
+              style={{ width: `${Math.min(100, (collectedCount / 10) * 100)}%` }}
             />
           </div>
         </div>

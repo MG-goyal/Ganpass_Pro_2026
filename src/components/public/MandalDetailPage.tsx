@@ -6,21 +6,20 @@ import { Mandal, FestivalEvent } from '../../types';
 import { useStamp } from '../../contexts/StampContext';
 import { Button } from '../ui/Button';
 import { StampCelebrationModal } from './StampCelebrationModal';
-import {
-  MapPin,
-  Clock,
-  Train,
-  Award,
-  Sparkles,
-  CheckCircle2,
-  Navigation,
-  ArrowLeft,
-  Share2,
-  Loader2,
+import { 
+  MapPin, 
+  Clock, 
+  Train, 
+  Award, 
+  Sparkles, 
+  CheckCircle2, 
+  Navigation, 
+  ArrowLeft, 
+  Share2, 
+  Loader2 
 } from 'lucide-react';
 
-const DEFAULT_DETAIL_IMAGE =
-  'https://images.unsplash.com/photo-1567591370504-80cfd69a68a5?auto=format&fit=crop&w=1200&q=80';
+const DEFAULT_DETAIL_IMAGE = 'https://images.unsplash.com/photo-1567591370504-80cfd69a68a5?auto=format&fit=crop&w=1200&q=80';
 
 export const MandalDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,23 +39,20 @@ export const MandalDetailPage: React.FC = () => {
     const fetchMandalData = async () => {
       if (!id) return;
       setIsLoading(true);
-
       try {
         const fetchedMandal = await mandalService.getMandalById(id);
-        if (isMounted) {
+        if (isMounted && fetchedMandal) {
           setMandal(fetchedMandal);
-        }
+          const mId = fetchedMandal.id || (fetchedMandal as any)._id || id;
 
-        if (fetchedMandal) {
-          const mId = fetchedMandal.id || id;
           const [nearby, events] = await Promise.all([
-            mandalService.getNearbyMandals(mId, 3),
-            eventService.getEventsByMandal ? eventService.getEventsByMandal(mId) : Promise.resolve([]),
+            mandalService.getNearbyMandals(mId),
+            eventService.getEventsByMandal ? eventService.getEventsByMandal(mId) : Promise.resolve([])
           ]);
 
           if (isMounted) {
-            setNearbyMandals(nearby);
-            setMandalEvents(events);
+            setNearbyMandals(nearby || []);
+            setMandalEvents(events || []);
           }
         }
       } catch (err) {
@@ -102,31 +98,47 @@ export const MandalDetailPage: React.FC = () => {
     );
   }
 
+  // Normalized Identifiers & Media
   const mandalId = mandal.id || (mandal as any).slug || (mandal as any)._id || id || '';
   const isCollected = hasStamp(mandalId);
-  const heroImage = mandal.heroImageUrl || mandal.image || (mandal as any).hero_image_url || DEFAULT_DETAIL_IMAGE;
+  const heroImage = mandal.heroImageUrl || mandal.hero_image_url || mandal.image || DEFAULT_DETAIL_IMAGE;
+
+  // Admin-Controlled Dynamic Values
+  const establishedYear = mandal.establishedYear ?? mandal.established_year ?? null;
+  const darshanStartTime = mandal.darshanStartTime ?? mandal.darshan_start_time ?? null;
+  const darshanEndTime = mandal.darshanEndTime ?? mandal.darshan_end_time ?? null;
+  const idolHeight = mandal.idolHeight ?? mandal.idol_height ?? null;
+  const stampEnabled = mandal.stampEnabled ?? mandal.stamp_enabled ?? true;
+
+  // Formatted Darshan Timings
+  const darshanHours = darshanStartTime && darshanEndTime
+    ? `${darshanStartTime} – ${darshanEndTime}`
+    : darshanStartTime || darshanEndTime || 'Not specified';
+
+  const lat = mandal.coordinates?.lat ?? mandal.latitude ?? 18.9912;
+  const lng = mandal.coordinates?.lng ?? mandal.longitude ?? 72.8361;
 
   const handleCollect = () => {
+    if (!stampEnabled) return;
     collectStamp(mandalId);
     setIsCelebrationOpen(true);
   };
 
   const handleShare = () => {
+    const shareData = {
+      title: `${mandal.name} - GanPass 2026 Mumbai`,
+      text: `Check out ${mandal.name} (${mandal.marathiName || mandal.marathi_name || ''}) on GanPass 2026 Mumbai!`,
+      url: window.location.href,
+    };
+
     if (navigator.share) {
-      navigator.share({
-        title: `${mandal.name} - GanPass 2026 Mumbai`,
-        text: `Check out ${mandal.name} (${mandal.marathiName || mandal.marathi_name || ''}) on GanPass 2026 Mumbai!`,
-        url: window.location.href,
-      }).catch(() => {});
+      navigator.share(shareData).catch(() => {});
     } else {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
-
-  const lat = mandal.coordinates?.lat ?? mandal.latitude ?? 18.9912;
-  const lng = mandal.coordinates?.lng ?? mandal.longitude ?? 72.8361;
 
   return (
     <div className="min-h-screen bg-[#FDFCF9] text-[#1A1A1A] pb-16">
@@ -141,10 +153,10 @@ export const MandalDetailPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Hero Header */}
+      {/* Hero Header Section */}
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 mb-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left: Gallery & Hero Photo */}
+          {/* Hero Image */}
           <div className="lg:col-span-7">
             <div className="relative rounded-3xl overflow-hidden aspect-[16/10] bg-[#1A1A1A]/5 border border-[#1A1A1A]/10 shadow-sm">
               <img
@@ -157,7 +169,7 @@ export const MandalDetailPage: React.FC = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A]/80 via-transparent to-transparent" />
 
-              {/* Badges */}
+              {/* Badges & Share */}
               <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
                 {mandal.isFeatured10 || mandal.is_featured ? (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F27D26] text-white text-xs font-bold uppercase tracking-wider shadow-md">
@@ -173,49 +185,54 @@ export const MandalDetailPage: React.FC = () => {
                 <div className="flex items-center gap-2 pointer-events-auto">
                   <button
                     onClick={handleShare}
-                    className="p-2.5 rounded-full bg-white/90 backdrop-blur-md text-[#1A1A1A] hover:bg-white transition-colors shadow-sm cursor-pointer"
                     title={copied ? 'Link Copied!' : 'Share Mandal'}
+                    className="p-2.5 rounded-full bg-white/90 backdrop-blur-md text-[#1A1A1A] hover:bg-white transition-colors shadow-sm cursor-pointer"
                   >
                     <Share2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Bottom location on image */}
+              {/* Bottom Image Overlay Location */}
               <div className="absolute bottom-4 left-4 right-4 text-white">
                 <div className="flex items-center gap-2 text-sm font-semibold">
                   <MapPin className="w-4 h-4 text-[#F27D26]" />
-                  <span>
-                    {mandal.address ? `${mandal.address}, ` : ''}
-                    {mandal.area}
-                  </span>
+                  <span>{mandal.address ? `${mandal.address}, ` : ''}{mandal.area}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right: Key Info & Digital Stamp Passport Box */}
+          {/* Info Card */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <div className="p-6 sm:p-8 bg-white border border-[#1A1A1A]/10 rounded-3xl shadow-xs">
-              <p className="text-xs font-bold uppercase tracking-widest text-[#F27D26] mb-2">
-                {mandal.zone || 'Mumbai'} • Est. {mandal.establishedYear || mandal.established_year || '1934'}
-              </p>
+              {/* Established Year & Region */}
+              <div className="text-xs font-bold uppercase tracking-widest text-[#F27D26] mb-2 flex items-center gap-2">
+                <span>{mandal.zone || mandal.area || 'MUMBAI'}</span>
+                {establishedYear && (
+                  <>
+                    <span>•</span>
+                    <span>EST. {establishedYear}</span>
+                  </>
+                )}
+              </div>
 
+              {/* Mandal Titles */}
               <h1 className="text-3xl sm:text-4xl font-serif-editorial font-bold text-[#1A1A1A] mb-1 leading-tight">
                 {mandal.name}
               </h1>
-
               {(mandal.marathiName || mandal.marathi_name) && (
                 <p className="text-base font-semibold text-[#1A1A1A]/60 mb-4">
                   {mandal.marathiName || mandal.marathi_name}
                 </p>
               )}
 
+              {/* Overview Text */}
               <p className="text-sm text-[#1A1A1A]/80 leading-relaxed mb-6 whitespace-pre-line">
-                {mandal.whyVisit || mandal.why_visit || mandal.description || 'Verified Sarvajanik Pandal in Mumbai.'}
+                {mandal.description || mandal.whyVisit || mandal.why_visit || 'Verified Sarvajanik Pandal in Mumbai.'}
               </p>
 
-              {/* Quick stats table */}
+              {/* Quick Stats Grid */}
               <div className="grid grid-cols-2 gap-3 py-4 border-y border-[#1A1A1A]/8 text-xs mb-6">
                 <div>
                   <span className="block text-[#1A1A1A]/50 font-medium">Nearest Station</span>
@@ -226,75 +243,76 @@ export const MandalDetailPage: React.FC = () => {
                 <div>
                   <span className="block text-[#1A1A1A]/50 font-medium">Est. Darshan Queue</span>
                   <span className="font-bold text-[#1A1A1A]">
-                    {mandal.crowdWaitEstimate || mandal.crowd_wait_estimate || `${mandal.avg_darshan_time_mins || 45} mins`}
+                    {mandal.crowdWaitEstimate || mandal.crowd_wait_estimate || (mandal.avg_darshan_time_mins ? `${mandal.avg_darshan_time_mins} mins` : 'Not specified')}
                   </span>
                 </div>
                 <div>
                   <span className="block text-[#1A1A1A]/50 font-medium">Darshan Hours</span>
-                  <span className="font-bold text-[#1A1A1A]">06:00 AM - 11:30 PM</span>
+                  <span className="font-bold text-[#1A1A1A]">{darshanHours}</span>
                 </div>
                 <div>
                   <span className="block text-[#1A1A1A]/50 font-medium">Idol Height</span>
-                  <span className="font-bold text-[#1A1A1A]">12 to 14 Feet</span>
+                  <span className="font-bold text-[#1A1A1A]">{idolHeight || 'Not specified'}</span>
                 </div>
               </div>
 
-              {/* Stamp Collection Section */}
-              <div
-                className={`p-5 rounded-2xl border transition-all ${
-                  isCollected
-                    ? 'bg-[#1A1A1A] text-white border-[#F27D26]'
-                    : 'bg-[#F27D26]/10 border-[#F27D26]/30 text-[#1A1A1A]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-[#F27D26]" />
-                    <span className="text-xs font-bold uppercase tracking-widest">
-                      GanPass 10 Passport
-                    </span>
+              {/* Stamp Collection Section (Admin Controllable) */}
+              {stampEnabled && (
+                <div
+                  className={`p-5 rounded-2xl border transition-all ${
+                    isCollected
+                      ? 'bg-[#1A1A1A] text-white border-[#F27D26]'
+                      : 'bg-[#F27D26]/10 border-[#F27D26]/30 text-[#1A1A1A]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-5 h-5 text-[#F27D26]" />
+                      <span className="text-xs font-bold uppercase tracking-widest">
+                        GanPass 10 Passport
+                      </span>
+                    </div>
+                    {isCollected && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">
+                        Stamped
+                      </span>
+                    )}
                   </div>
-                  {isCollected && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">
-                      Stamped
-                    </span>
+
+                  <p className="text-xs opacity-80 mb-4 leading-relaxed">
+                    {isCollected
+                      ? 'You have collected the verified digital darshan stamp for this mandal!'
+                      : 'Mark your presence and collect the official digital darshan stamp into your GanPass passport.'}
+                  </p>
+
+                  {isCollected ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                        <CheckCircle2 className="w-4 h-4" /> Recorded in Passport
+                      </span>
+                      <button
+                        onClick={() => removeStamp(mandalId)}
+                        className="text-xs text-rose-300 hover:underline cursor-pointer"
+                      >
+                        Undo Stamp
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="md"
+                      pill
+                      className="w-full"
+                      onClick={handleCollect}
+                      leftIcon={<Sparkles className="w-4 h-4 text-[#F27D26]" />}
+                    >
+                      Collect Darshan Stamp
+                    </Button>
                   )}
                 </div>
+              )}
 
-                <p className="text-xs opacity-80 mb-4 leading-relaxed">
-                  {isCollected
-                    ? 'You have collected the verified digital darshan stamp for this mandal!'
-                    : 'Mark your presence and collect the official digital darshan stamp into your GanPass passport.'}
-                </p>
-
-                {isCollected ? (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Recorded in Passport
-                    </span>
-                    <button
-                      onClick={() => removeStamp(mandalId)}
-                      className="text-xs text-rose-300 hover:underline cursor-pointer"
-                    >
-                      Undo Stamp
-                    </button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="primary"
-                    size="md"
-                    pill
-                    className="w-full"
-                    onClick={handleCollect}
-                    leftIcon={<Sparkles className="w-4 h-4 text-[#F27D26]" />}
-                  >
-                    Collect Darshan Stamp
-                  </Button>
-                )}
-              </div>
-
-              {/* Navigation button */}
+              {/* Google Maps Directions */}
               <div className="mt-4">
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
@@ -311,18 +329,21 @@ export const MandalDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Deep Details Grid */}
+      {/* Deep Details & Guide Section */}
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main Details */}
+          {/* Main Body Details */}
           <div className="lg:col-span-8 space-y-8">
+            {/* History & Heritage */}
             <div className="p-8 bg-white border border-[#1A1A1A]/10 rounded-3xl">
               <h3 className="text-2xl font-serif-editorial font-bold text-[#1A1A1A] mb-4">
                 History & Cultural Significance
               </h3>
               <p className="text-sm text-[#1A1A1A]/80 leading-relaxed whitespace-pre-line mb-6">
                 {mandal.history ||
-                  `${mandal.name} was established in ${mandal.establishedYear || mandal.established_year || '1934'} during the golden era of the public Ganeshotsav movement. Over the decades, it has become one of Mumbai's most cherished cultural epicenters, attracting devotees from across India with its artistic pandal decor, vibrant Aarti traditions, and deep-rooted civic charity work.`}
+                  (establishedYear
+                    ? `${mandal.name} was established in ${establishedYear} during the golden era of the public Ganeshotsav movement. Over the decades, it has become one of Mumbai's most cherished cultural epicenters.`
+                    : `${mandal.name} is a cherished cultural center of Mumbai's Ganeshotsav tradition.`)}
               </p>
 
               {mandal.highlights && mandal.highlights.length > 0 && (
@@ -344,7 +365,7 @@ export const MandalDetailPage: React.FC = () => {
               )}
             </div>
 
-            {/* How to Reach Guide */}
+            {/* How to Reach & Transit */}
             <div className="p-8 bg-white border border-[#1A1A1A]/10 rounded-3xl">
               <h3 className="text-2xl font-serif-editorial font-bold text-[#1A1A1A] mb-4">
                 How to Reach & Transit
@@ -360,7 +381,7 @@ export const MandalDetailPage: React.FC = () => {
                     <strong className="text-[#1A1A1A]">
                       {mandal.nearestStation || mandal.nearest_station || 'Nearest Station'}
                     </strong>{' '}
-                    (Central/Western Line). Pandals are accessible via short walking distance or shared auto-rickshaws/taxis from Station Road.
+                    (Central/Western Line). Pandals are accessible via short walking distance or shared auto-rickshaws/taxis.
                   </p>
                 </div>
 
@@ -370,13 +391,21 @@ export const MandalDetailPage: React.FC = () => {
                     <span>Best Time to Visit</span>
                   </div>
                   <p className="text-xs text-[#1A1A1A]/80 leading-relaxed">
-                    Early morning between <strong>06:00 AM - 09:00 AM</strong> offers the quickest darshan with significantly shorter wait lines compared to peak evenings.
+                    {darshanStartTime && darshanEndTime ? (
+                      <>
+                        Darshan is available from{' '}
+                        <strong className="text-[#1A1A1A]">{darshanStartTime}</strong> to{' '}
+                        <strong className="text-[#1A1A1A]">{darshanEndTime}</strong>.
+                      </>
+                    ) : (
+                      'Darshan timings have not been specified yet.'
+                    )}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Scheduled Events for this Mandal */}
+            {/* Events & Rituals */}
             {mandalEvents.length > 0 && (
               <div className="p-8 bg-white border border-[#1A1A1A]/10 rounded-3xl">
                 <div className="flex items-center justify-between mb-6">
@@ -387,7 +416,6 @@ export const MandalDetailPage: React.FC = () => {
                     {mandalEvents.length} Scheduled
                   </span>
                 </div>
-
                 <div className="space-y-3">
                   {mandalEvents.map((evt) => (
                     <Link
@@ -399,19 +427,23 @@ export const MandalDetailPage: React.FC = () => {
                         <span className="text-xs font-bold uppercase tracking-wider text-[#F27D26]">
                           {evt.type}
                         </span>
-                        <span className="text-xs text-[#1A1A1A]/60">
-                          {evt.startTime ? new Date(evt.startTime).toLocaleTimeString('en-IN', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          }) : ''}
-                        </span>
+                        {evt.startTime && (
+                          <span className="text-xs text-[#1A1A1A]/60">
+                            {new Date(evt.startTime).toLocaleTimeString('en-IN', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        )}
                       </div>
                       <h4 className="font-bold text-base text-[#1A1A1A] group-hover:text-[#F27D26] transition-colors">
                         {evt.title}
                       </h4>
-                      <p className="text-xs text-[#1A1A1A]/70 mt-1 line-clamp-1">
-                        {evt.description}
-                      </p>
+                      {evt.description && (
+                        <p className="text-xs text-[#1A1A1A]/70 mt-1 line-clamp-1">
+                          {evt.description}
+                        </p>
+                      )}
                     </Link>
                   ))}
                 </div>
@@ -419,16 +451,17 @@ export const MandalDetailPage: React.FC = () => {
             )}
           </div>
 
-          {/* Sidebar: Nearby Mandals */}
+          {/* Sidebar */}
           <div className="lg:col-span-4 space-y-6">
             <div className="p-6 bg-white border border-[#1A1A1A]/10 rounded-3xl">
               <h3 className="text-lg font-serif-editorial font-bold text-[#1A1A1A] mb-4">
                 Nearby in {mandal.area || 'Mumbai'}
               </h3>
               <div className="space-y-4">
-                {nearbyMandals.map((item) => {
+                {nearbyMandals.slice(0, 4).map((item) => {
                   const itemId = item.id || (item as any).slug || (item as any)._id;
-                  const itemImg = item.heroImageUrl || item.image || (item as any).hero_image_url || DEFAULT_DETAIL_IMAGE;
+                  const itemImg = item.heroImageUrl || item.hero_image_url || item.image || DEFAULT_DETAIL_IMAGE;
+
                   return (
                     <Link
                       key={itemId}
@@ -471,14 +504,16 @@ export const MandalDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Celebration Modal */}
-      <StampCelebrationModal
-        isOpen={isCelebrationOpen}
-        onClose={() => setIsCelebrationOpen(false)}
-        mandal={mandal}
-        collectedCount={collectedTotal}
-        isAllCompleted={collectedTotal === 10}
-      />
+      {/* Stamp Celebration Modal */}
+      {stampEnabled && (
+        <StampCelebrationModal
+          isOpen={isCelebrationOpen}
+          onClose={() => setIsCelebrationOpen(false)}
+          mandal={mandal}
+          collectedCount={collectedTotal}
+          isAllCompleted={collectedTotal === 10}
+        />
+      )}
     </div>
   );
 };
