@@ -10,10 +10,11 @@ export const Navbar: React.FC = () => {
   const { user, isAdmin, logout } = useAuth();
   const { collectedTotal } = useStamp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const navLinks = [
     { label: 'Explore Pandals', path: '/explore', icon: Compass },
-    { label: 'GanPass 10', path: '/Ganpass10', icon: Sparkles },
+    { label: 'GanPass 10', path: '/ganpass10', icon: Sparkles },
     { label: 'Passport', path: '/passport', icon: Award },
     { label: 'Schedule & Events', path: '/schedule', icon: Calendar },
     { label: 'AI Planner', path: '/planner', icon: Map },
@@ -25,10 +26,19 @@ export const Navbar: React.FC = () => {
     <header className="sticky top-0 z-50 bg-[#FDFCF9]/95 backdrop-blur-md border-b border-[#1A1A1A]/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-2">
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0 group">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F27D26] flex items-center justify-center text-white font-serif-editorial font-bold text-lg sm:text-xl shadow-xs group-hover:scale-105 transition-transform">
-            ग
-          </div>
+        <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
+          {!imgError ? (
+            <img
+              src="/logo.svg"
+              alt="GanPass Logo"
+              onError={() => setImgError(true)}
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl object-contain group-hover:scale-105 transition-transform"
+            />
+          ) : (
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F27D26] flex items-center justify-center text-white font-serif-editorial font-bold text-lg sm:text-xl shadow-xs group-hover:scale-105 transition-transform">
+              ग
+            </div>
+          )}
           <div>
             <span className="font-serif-editorial font-bold text-lg sm:text-xl tracking-tight text-[#1A1A1A] block leading-none">
               GANPASS

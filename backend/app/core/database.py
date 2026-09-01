@@ -15,7 +15,7 @@ async def connect_to_mongo():
     """
     Establishes connection to MongoDB Atlas or local instance and creates essential indexes.
     """
-    logger.info(f"Connecting to MongoDB at {settings.MONGODB_URI}...")
+    logger.info(f"Connecting to MongoDB at ....")
     try:
         db_instance.client = AsyncIOMotorClient(
             settings.MONGODB_URI,
