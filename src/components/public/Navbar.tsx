@@ -29,7 +29,7 @@ export const Navbar: React.FC = () => {
         <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
           {!imgError ? (
             <img
-              src="/logo.svg"
+              src="/logo.png"
               alt="GanPass Logo"
               onError={() => setImgError(true)}
               className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl object-contain group-hover:scale-105 transition-transform"
