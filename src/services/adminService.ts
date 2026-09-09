@@ -183,7 +183,7 @@ export const adminService = {
     try {
       const mandals =
         await apiRequest<Mandal[]>(
-          '/mandals?limit=100'
+          '/mandals?limit=200'
         );
 
       if (Array.isArray(mandals)) {
